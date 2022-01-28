@@ -1,5 +1,24 @@
+import { PrismaClient, User } from "@prisma/client";
 import { useCallback } from "react";
-import { ActionFunction, Form, useFetcher, useTransition } from "remix";
+import {
+  ActionFunction,
+  Form,
+  LoaderFunction,
+  useFetcher,
+  useLoaderData,
+  useTransition,
+} from "remix";
+
+interface UserResponse {
+  user: User | null;
+}
+
+export const loader: LoaderFunction = async (): Promise<UserResponse> => {
+  const prisma = new PrismaClient();
+  const user = await prisma.user.findFirst();
+  await prisma.$disconnect();
+  return { user };
+};
 
 const sleep = (ms: number) => {
   return new Promise((resolve) => {
@@ -14,6 +33,7 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 const Action = () => {
+  const { user } = useLoaderData<UserResponse>();
   const fetcher = useFetcher();
   const transition = useTransition();
 
@@ -28,6 +48,7 @@ const Action = () => {
 
   return (
     <div>
+      {user?.id}
       <h2>With Form</h2>
       <Form method="post">
         <button disabled={disabled} type="submit">
